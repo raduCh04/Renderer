@@ -54,10 +54,32 @@ void pixmap_dump(const Pixmap *pixmap, const char *file_name)
     fclose(f);
 }
 
+void pixel_set(Pixmap *pixmap, int32_t x, int32_t y, uint32_t color)
+{
+    pixmap->data[x + pixmap->width * y] = color;
+}
+
+void line_draw_naive(Pixmap *pixmap, int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color)
+{
+    int32_t dx = x1 - x0;
+    int32_t dy = y1 - y0;
+    if (dx != 0)
+    {
+        float m = (float)dy / (float)dx;
+        float b = y0 - m * x0;
+        for (int32_t x = x0; x <= x1; x++)
+        {
+            pixmap->data[x + pixmap->width * y0] = color;
+            y0 = (int32_t)roundf(m * x + y0);
+        }
+    }
+}
+
 int main(void)
 {
     Pixmap map = pixmap_create(800, 600);
     pixmap_clear_color(&map, 0xFF000000);
+    line_draw_naive(&map, 10, 10, 200, 200, 0xFFFFFFFF);
     pixmap_dump(&map, "output.data");
     pixmap_delete(&map);
 }
