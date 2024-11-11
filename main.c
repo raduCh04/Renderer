@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
 /**
  * Structure representing a Pixmap, a 2D pixel-based image.
  * Contains:
@@ -235,10 +239,48 @@ void line_draw_bresenham(Pixmap *pixmap, int32_t x0, int32_t y0, int32_t x1, int
     }
 }
 
+void circle_draw_naive(Pixmap *pixmap, float r, int32_t x, int32_t y, uint32_t color)
+{
+    for (float t = M_PI / 4 - 0.01f; t < M_PI / 2 + 0.01f; t += 0.01f)
+    {
+        int32_t cy = (int32_t)roundf(r * sinf(t));
+        int32_t cx = (int32_t)roundf(r * cosf(t));
+
+        pixel_set(pixmap, x - cx, y - cy, color);
+        pixel_set(pixmap, x - cy, y - cx, color);
+        pixel_set(pixmap, x - cx, y + cy, color);
+        pixel_set(pixmap, x - cy, y + cx, color);
+        pixel_set(pixmap, x + cx, y - cy, color);
+        pixel_set(pixmap, x + cy, y - cx, color);
+        pixel_set(pixmap, x + cx, y + cy, color);
+        pixel_set(pixmap, x + cy, y + cx, color);
+    }
+}
+
+// void circle_draw_improved(Pixmap *pixmap, float r, int32_t x, int32_t y, uint32_t color)
+// {
+//     int32_t cx = 0;
+//     int32_t cy = r;
+//     while (cy >= cx)
+//     {
+//         pixel_set(pixmap, x - cx, y - cy, color);
+//         pixel_set(pixmap, x - cy, y - cx, color);
+//         pixel_set(pixmap, x - cx, y + cy, color);
+//         pixel_set(pixmap, x - cy, y + cx, color);
+//         pixel_set(pixmap, x + cx, y - cy, color);
+//         pixel_set(pixmap, x + cy, y - cx, color);
+//         pixel_set(pixmap, x + cx, y + cy, color);
+//         pixel_set(pixmap, x + cy, y + cx, color);
+//         cx++; 
+//         cy = roundf(sqrtf(r * r - x * x));
+//     } 
+// }
+
 int main(int argc, char const *argv[])
 {
     Pixmap map = pixmap_create(800, 600);
     pixmap_clear_color(&map, 0xFF000000);
+    circle_draw_improved(&map, 100.0f, 300, 300, 0xFFFFFFFF);
     pixmap_dump(&map, "output.data");
     pixmap_delete(&map);
     return 0;
